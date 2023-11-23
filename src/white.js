@@ -1,38 +1,166 @@
 import React, { useState, useEffect } from 'react';
+import { collection, addDoc, orderBy, getDocs, query } from "firebase/firestore";
 import './Detail.css';
 import whiteProfile from './images/white/white_profile.png';
-import higginsProfile from './images/higgins/higgins_profile.jpg';
-import whiteData from './white.json'
+import whiteData from './white.json';
+import { dbService } from "./firebase.js";
+import Modal from 'react-modal';
 
 const ProfileSection = ( data ) => {
     const object = data.data;
     return (
-    <div>
-        <p>나이: {object.age}</p>
-        <p>직업: {object.occupation}</p>
-        <p>{object.description}</p>
-        {/* Use require to dynamically import the image */}
-        {/* <img src={require(`${object.image}`)}/> */}
+    <div className='profile-section-container'>
+        <div className='date'>{object.birth} ~ {object.death}</div>
+        <div className='description'>저는 {object.description}입니다.</div>
+        <div className='intro-wrapper'>
+        {object.intro.map((intro, index) => (
+          <div className="intro-box" key={index}>
+            {intro}
+          </div>
+        ))}
+        </div>
     </div>
     );
 }
 
-const PostSection = ( posts ) => {
+const PostSection = ({ posts }) => {
+    const [selectedPost, setSelectedPost] = useState(null);
+  
+    const handlePostClick = (post) => {
+      post.imageSrc = require(`${post.image}`);
+      setSelectedPost(post);
+    };
+  
+    const handleClosePopup = () => {
+      setSelectedPost(null);
+    };
+  
     return (
-        <div className="post-section-containter">
-            {posts.posts.map((post, index) => (
-                <div className="post-box">
-                    <img className="post-image" src={require(`${post.image}`)}/>
-                    <div className="post-text-wrapper">
-                        <div className="post-text">{post.text}</div>
-                        <div className="post-footer">{post.time}, 한국</div>
-                    </div>
-                </div>
-            ))}
-        </div>
-    )
-}
+      <div className="post-section-container">
+        {posts.map((post, index) => (
+          <div className="post-box" key={index} onClick={() => handlePostClick(post)}>
+            <img
+              className="post-image"
+              src={require(`${post.image}`)}
+              alt={post.text}
+            />
+            <div className="overlay">
+              {post.text.substr(0, 20)}...
+            </div>
+          </div>
+        ))}
+  
+        {/* Modal */}
+        <Modal
+          isOpen={!!selectedPost}
+          onRequestClose={handleClosePopup}
+          contentLabel="Post Modal"
+          className="post-modal"
+        >
+          <div className="popup-box">
+            <div className="popup-close" onClick={handleClosePopup}>
+              &times;
+            </div>
+            <img
+              className="popup-image"
+              src={selectedPost?.imageSrc}
+              alt={selectedPost?.text}
+            />
+            <div className="popup-text-wrapper">
+              <div className="popup-text">{selectedPost?.text}</div>
+              <div className="popup-footer">{selectedPost?.time}, 한국</div>
+            </div>
+          </div>
+        </Modal>
+      </div>
+    );
+  };
 
+const GuestSection = () => {
+    const [guestbook, setGuestbook] = useState([]);
+    const [name, setName] = useState('');
+    const [content, setContent] = useState('');
+  
+    const handleGuestbookSubmit = async () => {
+        try {
+            if (!content) {
+                window.alert('내용을 입력해주세요!')
+            } else if (!name) {
+                window.alert('이름을 입력해주세요!')
+            } else if (name && content) {
+
+                await addDoc(collection(dbService, 'white'), {
+                    name,
+                    content,
+                    timestamp: new Date(),
+                });
+        
+                const projectsCollection = collection(dbService, 'white');
+                const q = query(projectsCollection, orderBy('timestamp', 'desc'));
+                const querySnapshot = await getDocs(q);
+                const guestsData = querySnapshot.docs.map((doc) => ({
+                    ...doc.data(),
+                    id: doc.id,
+                }));
+                setGuestbook(guestsData);
+        
+                setName('');
+                setContent('');
+            };
+        } catch (error) {
+          console.error('Error adding guestbook entry:', error);
+        };
+    };
+  
+    useEffect(() => {
+      const fetchGuests = async () => {
+        const projectsCollection = collection(dbService, 'white');
+        const q = query(projectsCollection, orderBy('timestamp', 'desc'));
+  
+        try {
+          const querySnapshot = await getDocs(q);
+          const guestsData = querySnapshot.docs.map((doc) => ({
+            ...doc.data(),
+            id: doc.id,
+          }));
+          setGuestbook(guestsData);
+        } catch (error) {
+          console.error('Error fetching guests: ', error);
+        }
+      };
+
+      fetchGuests();
+    }, []);
+  
+    return (
+      <div className="guest-section-container">
+        <div className="guest-input-box">
+          <input
+            type="text"
+            placeholder="이름"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="guest-input-name"
+          />
+          <textarea
+            placeholder="내용"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            className="guest-input-content"
+          />
+          <button onClick={handleGuestbookSubmit}>입력</button>
+        </div>
+        <div className="guest-display-wrapper">
+          {guestbook.map((entry, index) => (
+            <div key={index} className="guest-display-box">
+              <div className="guest-display-name">{entry.name}</div>
+              <div className="guest-display-content balloon_03">{entry.content}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
 const DetailWhite = () => {
   const [selectedSection, setSelectedSection] = useState('프로필');
@@ -77,10 +205,7 @@ const DetailWhite = () => {
                     <PostSection posts={whiteData.post}/>
                 )}
                 {selectedSection === '방명록' && (
-                    <div>
-                    {/* 방명록 섹션 내용 */}
-                    방명록 섹션 내용이 여기에 들어갑니다.
-                    </div>
+                    <GuestSection/>
                 )}
                 </div>
             </div>
