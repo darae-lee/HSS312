@@ -2,22 +2,25 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import './App.css';
 import whiteProfile from './images/white/white_profile.png';
-import higginsProfile from './images/higgins/higgins_profile.jpg';
+import bischofProfile from './images/bischof/profile.jpg';
 import DetailWhite from './white.js'
+import DetailBischof from './bischof.js'
 
 
 const Home = () => {
   const navigate = useNavigate();
 
   const handleWhiteProfileClick = () => {
-    // Navigate to the "/white" route when whiteProfile is clicked
     navigate('/detail/white');
+  };
+  const handleBischofProfileClick = () => {
+    navigate('/detail/bischof');
   };
 
   return (
     <div className="wrap">
-      <div className="title">1950 Korea</div>
-      <div className="subtitle">Guess Who?</div>
+      <div className="title">Korean War</div>
+      <div className="subtitle">Photo Journalist</div>
       <div className="image-wrapper">
         <img
           src={whiteProfile}
@@ -26,7 +29,12 @@ const Home = () => {
           onClick={handleWhiteProfileClick}
         />
         <div className="main-image-gap"></div>
-        <img src={higginsProfile} className="main-image" alt="Higgins Profile" />
+        <img
+          src={bischofProfile}
+          className="main-image"
+          alt="Bischof Profile"
+          onClick={handleBischofProfileClick}
+        />
       </div>
       <footer>[HSS312] Darae Lee</footer>
     </div>
@@ -40,6 +48,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/detail/white" element={<DetailWhite />} />
+          <Route path="/detail/bischof" element={<DetailBischof />} />
         </Routes>
       </Router>
     </div>

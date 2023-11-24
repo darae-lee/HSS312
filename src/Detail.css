@@ -2,9 +2,16 @@
     width: 100vw;
 }
 /* header */
+.header {
+    text-align: center;
+    font-size: 17px;
+    font-weight: bold;
+    margin: 15px auto;
+    cursor: pointer;
+}
+/* box */
 .detail-image {
     text-align: center;
-    margin-top: 15px;
 }
 .detail-image img {
     width: 500px;
@@ -148,6 +155,7 @@
     font-size: 17px;
     padding: 10px 20px;
     box-sizing: border-box;
+    line-height: 160%;
 }
 .popup-box .popup-footer {
     text-align: right;

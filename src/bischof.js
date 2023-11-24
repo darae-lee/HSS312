@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc, orderBy, getDocs, query } from "firebase/firestore";
 import './Detail.css';
-import whiteProfile from './images/white/white_profile.png';
-import whiteData from './white.json';
+import bischofProfile from './images/bischof/profile.jpg';
+import bischofData from './bischof.json';
 import { dbService } from "./firebase.js";
 import Modal from 'react-modal';
 import { Link } from 'react-router-dom';
@@ -68,9 +68,7 @@ const PostSection = ({ posts }) => {
               alt={selectedPost?.text}
             />
             <div className="popup-text-wrapper">
-              <div className="popup-text" style={{ whiteSpace: 'pre-line' }}>
-                {selectedPost?.text}
-              </div>
+              <div className="popup-text" style={{ whiteSpace: 'pre-line' }}>{selectedPost?.text}</div>
               <div className="popup-footer">{selectedPost?.time}, 한국</div>
             </div>
           </div>
@@ -92,13 +90,13 @@ const GuestSection = () => {
                 window.alert('이름을 입력해주세요!')
             } else if (name && content) {
 
-                await addDoc(collection(dbService, 'white'), {
+                await addDoc(collection(dbService, 'bischof'), {
                     name,
                     content,
                     timestamp: new Date(),
                 });
         
-                const projectsCollection = collection(dbService, 'white');
+                const projectsCollection = collection(dbService, 'bischof');
                 const q = query(projectsCollection, orderBy('timestamp', 'desc'));
                 const querySnapshot = await getDocs(q);
                 const guestsData = querySnapshot.docs.map((doc) => ({
@@ -117,7 +115,7 @@ const GuestSection = () => {
   
     useEffect(() => {
       const fetchGuests = async () => {
-        const projectsCollection = collection(dbService, 'white');
+        const projectsCollection = collection(dbService, 'bischof');
         const q = query(projectsCollection, orderBy('timestamp', 'desc'));
   
         try {
@@ -165,7 +163,7 @@ const GuestSection = () => {
     );
   };
 
-const DetailWhite = () => {
+const DetailBischof = () => {
   const [selectedSection, setSelectedSection] = useState('프로필');
 
   const handleSectionClick = (section) => {
@@ -179,9 +177,9 @@ const DetailWhite = () => {
       </div>
       <div className='wrap'>
         <div className='detail-image'>
-            <img src={whiteProfile}/>
+            <img src={bischofProfile}/>
         </div>
-        <div className='detail-name'><span>{whiteData.name}</span></div>
+        <div className='detail-name'><span>{bischofData.name}</span></div>
         <div className="detail-body">
             <div className="section-buttons">
                 <button
@@ -205,10 +203,10 @@ const DetailWhite = () => {
             </div>
             <div className="selected-section">
                 {selectedSection === '프로필' && (
-                    <ProfileSection data={whiteData}/>
+                    <ProfileSection data={bischofData}/>
                 )}
                 {selectedSection === '게시글' && (
-                    <PostSection posts={whiteData.post}/>
+                    <PostSection posts={bischofData.post}/>
                 )}
                 {selectedSection === '방명록' && (
                     <GuestSection/>
@@ -223,4 +221,4 @@ const DetailWhite = () => {
   );
 };
 
-export default DetailWhite;
+export default DetailBischof;
